@@ -1,0 +1,152 @@
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "binary"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  username      String    @unique
+  passwordHash  String
+  bio           String?
+  birthDate     String?
+  avatar        String?
+  banner        String?
+  xp            Int       @default(0)
+  itibar        Int       @default(0)
+  level         Int       @default(1)
+  isPremium     Boolean   @default(false)
+  premiumType   String?
+  publicProfile Boolean   @default(true)
+  nsfwOk        Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  posts         Post[]
+  likes         Like[]
+  comments      Comment[]
+  followers     Follow[]  @relation("Following")
+  following     Follow[]  @relation("Follower")
+  sentMessages  Message[] @relation("Sender")
+  recvMessages  Message[] @relation("Receiver")
+  badges        UserBadge[]
+  transactions  Transaction[] @relation("FromUser")
+  receivedTrans Transaction[] @relation("ToUser")
+  favoriteAnime FavoriteAnime[]
+}
+
+model FavoriteAnime {
+  id        String   @id @default(uuid())
+  userId    String
+  malId     Int
+  title     String
+  imageUrl  String?
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Post {
+  id        String    @id @default(uuid())
+  userId    String
+  type      String    // short, long, list, poll
+  content   String
+  nsfw      Boolean   @default(false)
+  likeCount Int       @default(0)
+  createdAt DateTime  @default(now())
+
+  user     User      @relation(fields: [userId], references: [id])
+  likes    Like[]
+  comments Comment[]
+}
+
+model Like {
+  id     String @id @default(uuid())
+  userId String
+  postId String
+
+  user User @relation(fields: [userId], references: [id])
+  post Post @relation(fields: [postId], references: [id])
+
+  @@unique([userId, postId])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  userId    String
+  postId    String
+  content   String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  post Post @relation(fields: [postId], references: [id])
+}
+
+model Follow {
+  id          String @id @default(uuid())
+  followerId  String
+  followingId String
+
+  follower  User @relation("Follower", fields: [followerId], references: [id])
+  following User @relation("Following", fields: [followingId], references: [id])
+
+  @@unique([followerId, followingId])
+}
+
+model Badge {
+  id          String      @id @default(uuid())
+  name        String
+  description String
+  tier        String      // bronz, gumus, altin, efsanevi
+  imageUrl    String?
+  users       UserBadge[]
+}
+
+model UserBadge {
+  id       String   @id @default(uuid())
+  userId   String
+  badgeId  String
+  earnedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id])
+  badge Badge @relation(fields: [badgeId], references: [id])
+
+  @@unique([userId, badgeId])
+}
+
+model Transaction {
+  id          String   @id @default(uuid())
+  fromUserId  String
+  toUserId    String
+  amount      Int      // AP cinsinden
+  type        String   // tip, bounty, sale
+  commission  Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  fromUser User @relation("FromUser", fields: [fromUserId], references: [id])
+  toUser   User @relation("ToUser", fields: [toUserId], references: [id])
+}
+
+model Message {
+  id         String    @id @default(uuid())
+  senderId   String
+  receiverId String
+  content    String
+  readAt     DateTime?
+  createdAt  DateTime  @default(now())
+
+  sender   User @relation("Sender", fields: [senderId], references: [id])
+  receiver User @relation("Receiver", fields: [receiverId], references: [id])
+}
+
+model Report {
+  id         String   @id @default(uuid())
+  reporterId String
+  postId     String
+  reason     String
+  status     String   @default("pending") // pending, resolved, dismissed
+  createdAt  DateTime @default(now())
+}

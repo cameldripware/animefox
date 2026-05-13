@@ -1,0 +1,60 @@
+/* =============================================
+   ANIMEFOX PERFORMANS VE MOBIL OPTIMIZASYONU
+   Diger kodlara dokunmaz, sadece hizlandirir
+   ============================================= */
+
+/* GPU Hizlandirma */
+.glass-card, .anime-card, .btn-gradient, .logo-gradient, img, video {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Gorsel ve Video Yukleme Yumusatma (Siyah Ekrani Engeller) */
+img, video {
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+  background: #1a1a1a;
+}
+
+img[data-loaded="true"], video[data-loaded="true"] {
+  opacity: 1;
+}
+
+/* Mobil Tam Ekran Kaydirma */
+.mobile-reels-container {
+  scroll-snap-type: y mandatory;
+  overflow-y: scroll;
+  height: 100vh;
+  background: #000;
+}
+
+.mobile-reels-item {
+  scroll-snap-align: start;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Iskelet Yukleme ve Spinner */
+.skeleton {
+  background: linear-gradient(90deg, #1a1a1a 25%, #262626 50%, #1a1a1a 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Mobil Dokunmatik Iyilestirmeler */
+button, a, input, textarea {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; }
+}
